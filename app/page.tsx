@@ -2,15 +2,34 @@
 
 import { useEffect, useState } from "react";
 
-export default function Home() {
-  const [schools, setSchools] = useState<any[]>([]);
+interface Address {
+  Id: number;
+  Location: string;
+}
+
+interface School {
+  Id: number;
+  Name: string;
+  AddressLocation: string;
+  ContactNumber: string;
+  Email: string;
+}
+
+export default function SchoolPage() {
+  const [schools, setSchools] = useState<School[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // form state
+  // Form state
   const [name, setName] = useState("");
-  const [addressId, setAddressId] = useState<number>(1);
-  const [contactNumber, setContactNumber] = useState("");
+  const [addressId, setAddressId] = useState<number | "">("");
+  const [contact, setContact] = useState("");
   const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    loadSchools();
+    loadAddresses();
+  }, []);
 
   async function loadSchools() {
     setLoading(true);
@@ -20,8 +39,15 @@ export default function Home() {
     setLoading(false);
   }
 
+  async function loadAddresses() {
+    const res = await fetch("/api/addresses");
+    const data = await res.json();
+    setAddresses(data);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!addressId) return alert("Please select an address");
 
     await fetch("/api/schools", {
       method: "POST",
@@ -29,159 +55,110 @@ export default function Home() {
       body: JSON.stringify({
         name,
         addressId,
-        contactNumber,
+        contactNumber: contact,
         email,
       }),
     });
 
-    // reset form
     setName("");
-    setAddressId(1);
-    setContactNumber("");
+    setAddressId("");
+    setContact("");
     setEmail("");
-
-    // reload list
     loadSchools();
   }
 
-  useEffect(() => {
-    loadSchools();
-  }, []);
+  function handleClear() {
+    setName("");
+    setAddressId("");
+    setContact("");
+    setEmail("");
+  }
 
   return (
-    <main
-      style={{
-        padding: 20,
-        maxWidth: 800,
-        margin: "0 auto",
-        background: "#ffffff",
-        color: "#000000",
-        minHeight: "100vh",
-      }}
-    >
-      <h1 style={{ textAlign: "center", marginBottom: "30px" }}>
-        Schools List
-      </h1>
+    <div style={{ padding: 20, minHeight: "100vh", background: "#f8f9fa" }}>
+      <h1 style={{ textAlign: "center", marginBottom: 30 }}>Schools</h1>
 
-      {/* School Add Form */}
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "15px",
-          marginBottom: "40px",
-          border: "1px solid #ccc",
-          padding: "20px",
-          borderRadius: "10px",
-          maxWidth: "500px",
-          marginLeft: "auto",
-          marginRight: "auto",
-          background: "#f9f9f9",
-        }}
-      >
-        <h2 style={{ textAlign: "center", marginBottom: "15px" }}>
-          Add New School
-        </h2>
-        <input
-          type="text"
-          placeholder="School Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          style={{
-            padding: "10px",
-            borderRadius: "5px",
-            border: "1px solid #ccc",
-            color: "#000000",
-          }}
-        />
-        <input
-          type="number"
-          placeholder="Address Id"
-          value={addressId}
-          onChange={(e) => setAddressId(Number(e.target.value))}
-          required
-          style={{
-            padding: "10px",
-            borderRadius: "5px",
-            border: "1px solid #ccc",
-            color: "#000000",
-          }}
-        />
-        <input
-          type="text"
-          placeholder="Contact Number"
-          value={contactNumber}
-          onChange={(e) => setContactNumber(e.target.value)}
-          style={{
-            padding: "10px",
-            borderRadius: "5px",
-            border: "1px solid #ccc",
-            color: "#000000",
-          }}
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{
-            padding: "10px",
-            borderRadius: "5px",
-            border: "1px solid #ccc",
-            color: "#000000",
-          }}
-        />
+      {/* Form Card */}
+      <div style={{ background: "#fff", padding: 20, borderRadius: 8, marginBottom: 30, boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexWrap: "wrap", gap: 15, alignItems: "center" }}>
+          <input
+            type="text"
+            placeholder="School Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            style={{ flex: "1 1 200px", padding: 10, borderRadius: 5, border: "1px solid #ccc" }}
+          />
 
-        <button
-          type="submit"
-          style={{
-            background: "green",
-            color: "white",
-            padding: "10px",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          ➕ Add School
-        </button>
-      </form>
-
-      {/* School List Table */}
-      {loading ? (
-        <p style={{ textAlign: "center" }}>Loading...</p>
-      ) : (
-        <div className="table-responsive">
-          <table
-            className="table table-bordered"
-            style={{ background: "#ffffff", color: "#000000" }}
+          <select
+            value={addressId}
+            onChange={(e) => setAddressId(Number(e.target.value))}
+            required
+            style={{ flex: "1 1 200px", padding: 10, borderRadius: 5, border: "1px solid #ccc" }}
           >
-            <thead style={{ fontWeight: "bold" }}>
+            <option value="">Select Address</option>
+            {addresses.map((addr) => (
+              <option key={addr.Id} value={addr.Id}>
+                {addr.Location}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="text"
+            placeholder="Contact Number"
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+            style={{ flex: "1 1 150px", padding: 10, borderRadius: 5, border: "1px solid #ccc" }}
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ flex: "1 1 200px", padding: 10, borderRadius: 5, border: "1px solid #ccc" }}
+          />
+
+          <div style={{ display: "flex", gap: 10 }}>
+            <button type="submit" style={{ background: "green", color: "#fff", padding: "10px 20px", border: "none", borderRadius: 5 }}>
+              Save
+            </button>
+            <button type="button" onClick={handleClear} style={{ background: "red", color: "#fff", padding: "10px 20px", border: "none", borderRadius: 5 }}>
+              Clear
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Schools Table */}
+      <div style={{ overflowX: "auto" }}>
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff" }}>
+            <thead style={{ background: "#e9ecef" }}>
               <tr>
-                <th>#</th>
-                <th>School Name</th>
-                <th>Address</th>
-                <th>Contact Number</th>
-                <th>Email</th>
+                <th style={{ padding: 10, border: "1px solid #dee2e6" }}>#</th>
+                <th style={{ padding: 10, border: "1px solid #dee2e6" }}>Name</th>
+                <th style={{ padding: 10, border: "1px solid #dee2e6" }}>Address</th>
+                <th style={{ padding: 10, border: "1px solid #dee2e6" }}>Contact</th>
+                <th style={{ padding: 10, border: "1px solid #dee2e6" }}>Email</th>
               </tr>
             </thead>
             <tbody>
-              {schools.map((s: any, index: number) => (
+              {schools.map((s, idx) => (
                 <tr key={s.Id}>
-                  <td>{index + 1}</td>
-                  <td>{s.Name}</td>
-                  <td>{s.AddressLocation}</td>
-                  <td>{s.ContactNumber ?? "N/A"}</td>
-                  <td>{s.Email ?? "N/A"}</td>
+                  <td style={{ padding: 10, border: "1px solid #dee2e6" }}>{idx + 1}</td>
+                  <td style={{ padding: 10, border: "1px solid #dee2e6" }}>{s.Name}</td>
+                  <td style={{ padding: 10, border: "1px solid #dee2e6" }}>{s.AddressLocation}</td>
+                  <td style={{ padding: 10, border: "1px solid #dee2e6" }}>{s.ContactNumber ?? "N/A"}</td>
+                  <td style={{ padding: 10, border: "1px solid #dee2e6" }}>{s.Email ?? "N/A"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      )}
-    </main>
+        )}
+      </div>
+    </div>
   );
 }
