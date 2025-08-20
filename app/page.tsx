@@ -49,8 +49,19 @@ export default function Home() {
   }, []);
 
   return (
-    <main style={{ padding: 20, maxWidth: 600 }}>
-      <h1>Schools List</h1>
+    <main
+      style={{
+        padding: 20,
+        maxWidth: 800,
+        margin: "0 auto",
+        background: "#ffffff",
+        color: "#000000",
+        minHeight: "100vh",
+      }}
+    >
+      <h1 style={{ textAlign: "center", marginBottom: "30px" }}>
+        Schools List
+      </h1>
 
       {/* School Add Form */}
       <form
@@ -58,20 +69,32 @@ export default function Home() {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "10px",
-          marginBottom: "20px",
+          gap: "15px",
+          marginBottom: "40px",
           border: "1px solid #ccc",
-          padding: "15px",
-          borderRadius: "8px",
+          padding: "20px",
+          borderRadius: "10px",
+          maxWidth: "500px",
+          marginLeft: "auto",
+          marginRight: "auto",
+          background: "#f9f9f9",
         }}
       >
-        <h2>Add New School</h2>
+        <h2 style={{ textAlign: "center", marginBottom: "15px" }}>
+          Add New School
+        </h2>
         <input
           type="text"
           placeholder="School Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          style={{
+            padding: "10px",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+            color: "#000000",
+          }}
         />
         <input
           type="number"
@@ -79,18 +102,36 @@ export default function Home() {
           value={addressId}
           onChange={(e) => setAddressId(Number(e.target.value))}
           required
+          style={{
+            padding: "10px",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+            color: "#000000",
+          }}
         />
         <input
           type="text"
           placeholder="Contact Number"
           value={contactNumber}
           onChange={(e) => setContactNumber(e.target.value)}
+          style={{
+            padding: "10px",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+            color: "#000000",
+          }}
         />
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          style={{
+            padding: "10px",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+            color: "#000000",
+          }}
         />
 
         <button
@@ -102,23 +143,44 @@ export default function Home() {
             border: "none",
             borderRadius: "5px",
             cursor: "pointer",
+            fontWeight: "bold",
           }}
         >
           ➕ Add School
         </button>
       </form>
 
-      {/* School List */}
+      {/* School List Table */}
       {loading ? (
-        <p>Loading...</p>
+        <p style={{ textAlign: "center" }}>Loading...</p>
       ) : (
-        <ul>
-          {schools.map((s: any) => (
-            <li key={s.Id}>
-              <b>{s.Name}</b> — {s.AddressLocation} ({s.ContactNumber ?? "N/A"})
-            </li>
-          ))}
-        </ul>
+        <div className="table-responsive">
+          <table
+            className="table table-bordered"
+            style={{ background: "#ffffff", color: "#000000" }}
+          >
+            <thead style={{ fontWeight: "bold" }}>
+              <tr>
+                <th>#</th>
+                <th>School Name</th>
+                <th>Address</th>
+                <th>Contact Number</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {schools.map((s: any, index: number) => (
+                <tr key={s.Id}>
+                  <td>{index + 1}</td>
+                  <td>{s.Name}</td>
+                  <td>{s.AddressLocation}</td>
+                  <td>{s.ContactNumber ?? "N/A"}</td>
+                  <td>{s.Email ?? "N/A"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </main>
   );
